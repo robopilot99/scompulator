@@ -23,13 +23,13 @@ Scompulator::Scompulator(std::ifstream &infile){
             return;
             }
         }
-        if(sscanf(line.c_str(), "ADDRESS_RADIX = %3s", &radix) == 1){
+        if(sscanf(line.c_str(), "ADDRESS_RADIX = %3s", radix) == 1){
             if(strcmp(radix, "HEX") != 0){
             std::cout << "Only MIF files with radix HEX are supported" << std::endl;
             return;
             }
         }
-        if(sscanf(line.c_str(), "DATA_RADIX = %3s", &radix) == 1){
+        if(sscanf(line.c_str(), "DATA_RADIX = %3s", radix) == 1){
             if(strcmp(radix, "HEX") != 0){
             std::cout << "Only MIF files with radix HEX are supported" << std::endl;
             return;
@@ -59,6 +59,11 @@ Scompulator::Scompulator(std::ifstream &infile){
                 } else {
                     memory[address].data = value;
                     memory[address].comment = std::string(line.substr(commentIndex, std::string::npos));
+                    if((value & opcodeBitmask) == 0 && (value & operandBitmask) != 0){
+                        // If a memory location has no valid opcode value, but some
+                        // operand value, it is probably in use as a constant
+                        memory[address].dataType = MemType::DATA;
+                    }
                 }
             }
         } else if (section == 2){
@@ -71,12 +76,93 @@ void Scompulator::run(){
 
 }
 
-void Scompulator::execute(){
+bool Scompulator::execute(){
+    unsigned short instruction = memory[PC].data;
+    Opcode opcode = (Opcode)((instruction & opcodeBitmask) >> 10);
+    unsigned short operand = instruction & operandBitmask;
+    bool halted = false;
 
+    switch (opcode)
+    {
+    case Opcode::LOAD:
+        AC = memory[operand].data;
+        break;
+    case Opcode::STORE:
+        memory[operand].data = AC;
+        break;
+    case Opcode::ADD:
+        AC += memory[operand].data;
+        break;
+    case Opcode::SUB:
+        AC -= memory[operand].data;
+        break;
+    case Opcode::JUMP:
+        if(operand == PC) halted = true; // In a jump that jumps to itself in a endless loop
+        PC = operand;
+        PC--; // We always add 1 to the PC later in this block
+        break;
+    case Opcode::JNEG:
+        if(AC < 0) PC = operand - 1;
+        break;
+    case Opcode::JPOS:
+        if(AC > 0) PC = operand - 1;
+        break;
+    case Opcode::JZERO:
+        if(AC == 0) PC = operand - 1;
+        break;
+    case Opcode::AND:
+        AC = AC & memory[operand].data;
+        break;
+    case Opcode::OR:
+        AC = AC | memory[operand].data;
+        break;
+    case Opcode::XOR:
+        AC = AC ^ memory[operand].data;
+        break;
+    case Opcode::SHIFT:
+        // Shifting by a negative value is undefined behavior in C so we have to do
+        // some extra logic here to perform the shift
+        AC = (operand >> 9)? AC >> -((int)(operand | opcodeBitmask)): AC << operand;
+        break;
+    case Opcode::ADDI:
+        // Sign-extend the immediate if necessary
+        AC += (operand >> 9)? (operand | opcodeBitmask): operand;
+        break;
+    case Opcode::ILOAD:
+        AC = memory[memory[operand].data].data;
+        break;
+    case Opcode::ISTORE:
+        memory[memory[operand].data].data = AC;
+        break;
+    case Opcode::CALL:
+
+        break;
+    case Opcode::RETURN:
+
+        break;
+    case Opcode::IN:
+
+        break;
+    case Opcode::OUT:
+
+        break;
+    default:
+        if(opcode != Opcode::NOP){
+            std::cout << "Unrecognized opcode " << std::hex << (int)opcode << std::endl;
+        }
+        break;
+    }
+
+    PC++;
+
+    return halted;
 }
 
 void Scompulator::dumpMemory(){
-    for(int i = 0; i < memSize; i++){
+    std::cout << "AC: " << AC << std::endl;
+    std::cout << "PC: " << PC << std::endl;
+
+    for(unsigned int i = 0; i < memSize; i++){
         std::cout << std::hex << i << " : " << memory[i].data << " " << memory[i].comment << std::endl;
     }
 }

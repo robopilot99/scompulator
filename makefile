@@ -1,5 +1,5 @@
 CC=g++
-CXXFLAGS=-g
+CXXFLAGS=-g -Wall
 
 .PHONY: all clean
 
@@ -10,8 +10,8 @@ clean :
 	rm *.o
 	rm Scompulator
 
-scompulator.o : scompulator.cpp scompulator.h
-	$(CC) $(CXXFLAGS) -c scompulator.cpp scompulator.h
+scompulator.o : scompulator.cpp scompulator.h names.h
+	$(CC) $(CXXFLAGS) -c scompulator.cpp scompulator.h names.h
 
 main.o : main.cpp scompulator.h
 	$(CC) $(CXXFLAGS) -c main.cpp scompulator.h

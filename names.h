@@ -21,4 +21,7 @@ const std::string opcodeNames[] = {
     "RETURN",
     "IN",
     "OUT"
-}
+};
+
+const short opcodeBitmask  = 0xFC00;
+const short operandBitmask = 0x03Ff;

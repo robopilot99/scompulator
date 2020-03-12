@@ -4,6 +4,8 @@
 #include <assert.h>
 #include <cstring>
 
+#include "names.h"
+
 enum class Opcode { 
     NOP = 0x00,
     LOAD = 0x01,
@@ -27,9 +29,18 @@ enum class Opcode {
     OUT = 0x13,
 };
 
+enum class MemType { 
+    UNKNOWN,
+    DATA,
+    INSTRUCTION
+};
+
 struct MemLocation { // Struct for represnenting the contents of a single address in memory
     unsigned short data = 0; // 16 bit wide memory width
-    std::string comment = "";
+    std::string comment = ""; // Comment read in from MIF file
+    // Store whether a particular memory address is in use as
+    // data or an instruction in order to detect common errors
+    MemType dataType = MemType::UNKNOWN; 
 };
 
 class Scompulator{
@@ -44,6 +55,8 @@ class Scompulator{
     public:
         Scompulator(std::ifstream &infile);
         void run();
-        void execute(); // Perform the next instruction
+        // Perform the next instruction
+        // Returns true if the execution has halted for whatever reason (jump jumping to itself)
+        bool execute(); 
         void dumpMemory();
 };

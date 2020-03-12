@@ -7,7 +7,10 @@ int main(){
     Scompulator scomp = Scompulator(infile);
     // scomp.dumpMemory();
     for(int i = 0; i < 50; i++){
-        scomp.execute();
+        if(scomp.execute()){
+            std::cout << "Halted" << std::endl;
+            break;
+        }
     }
     scomp.dumpMemory();
 }
