@@ -64,6 +64,9 @@ Scompulator::Scompulator(std::ifstream &infile){
                         // operand value, it is probably in use as a constant
                         memory[address].dataType = MemType::DATA;
                     }
+                    if(memory[address].data != 0 && address > lastAddress){
+                        lastAddress = address;
+                    }
                 }
             }
         } else if (section == 2){
@@ -88,7 +91,13 @@ bool Scompulator::execute(){
         AC = memory[operand].data;
         break;
     case Opcode::STORE:
-        memory[operand].data = AC;
+        if(operand < memSize){
+            memory[operand].data = AC;
+            if(operand > lastAddress)
+                lastAddress = operand;
+        } else {
+            std::cout << "Warning: write outside bounds of memory" << std::endl;
+        }
         break;
     case Opcode::ADD:
         AC += memory[operand].data;
@@ -132,13 +141,31 @@ bool Scompulator::execute(){
         AC = memory[memory[operand].data].data;
         break;
     case Opcode::ISTORE:
-        memory[memory[operand].data].data = AC;
+        if(memory[operand].data < memSize){
+            memory[memory[operand].data].data = AC;
+            if(memory[operand].data > lastAddress)
+                lastAddress = memory[operand].data;
+        } else {
+            std::cout << "Warning: write outside bounds of memory" << std::endl;
+        }
         break;
     case Opcode::CALL:
-
+        if(PC_StackPtr > 9){
+            std::cout << "Warning: stack depth greater then 10, behavior undefined, ignoring subroutine call" << std::endl;
+        } else {
+            PC_Stack[PC_StackPtr] = PC;
+            PC_StackPtr++;
+            PC = operand - 1;
+        }
         break;
     case Opcode::RETURN:
-
+        if(PC_StackPtr < 1){
+            std::cout << "Warning: returning while not in subroutine, behavior undefined, terminating execution" << std::endl;
+            halted = true;
+        } else {
+            PC_StackPtr--;
+            PC = PC_Stack[PC_StackPtr];
+        }
         break;
     case Opcode::IN:
 
@@ -162,7 +189,15 @@ void Scompulator::dumpMemory(){
     std::cout << "AC: " << AC << std::endl;
     std::cout << "PC: " << PC << std::endl;
 
-    for(unsigned int i = 0; i < memSize; i++){
-        std::cout << std::hex << i << " : " << memory[i].data << " " << memory[i].comment << std::endl;
+    for(unsigned int i = 0; i <= lastAddress; i++){
+        std::cout
+        << "\033[93m" << std::hex << i << " : " // Line number
+        << "\033[37m" << std::setw(5) << memory[i].data << " " // Value
+        << "\033[90m" << memory[i].comment 
+        << "\033[0m"  << std::endl;
+    }
+    if(lastAddress < memSize){
+        std::cout << std::dec;
+        std::cout << "Omitted " << memSize - lastAddress << " memory locations with value 0" << std::endl;
     }
 }

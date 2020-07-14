@@ -48,10 +48,13 @@ class Scompulator{
         std::ifstream infile;
         MemLocation* memory;
         unsigned int memSize;
+        unsigned int lastAddress = 0; // Last address that has an actual value in it
 
         // The one and only accumulator register, 16 bits exactly for compatibility with SCOMP
         u_int16_t AC = 0;
         short PC = 0;
+        unsigned int PC_Stack [10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        unsigned char PC_StackPtr = 0; // Points to the next open index in the PC stack
     public:
         Scompulator(std::ifstream &infile);
         void run();
