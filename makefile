@@ -1,7 +1,7 @@
 CC=g++
 CXXFLAGS=-g -Wall
 
-.PHONY: all clean
+.PHONY: all
 
 all : scompulator.o main.o
 	$(CC) $(CXXFLAGS) -o Scompulator scompulator.o main.o

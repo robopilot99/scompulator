@@ -75,6 +75,10 @@ Scompulator::Scompulator(std::ifstream &infile){
     }
 }
 
+Scompulator::~Scompulator(){
+    delete[] memory;
+}
+
 void Scompulator::run(){
 
 }
@@ -185,19 +189,33 @@ bool Scompulator::execute(){
     return halted;
 }
 
+void Scompulator::dumpLine(unsigned int line){
+    if(line == PC)
+        std::cout << "\033[1m";
+    std::cout
+    << "\033[93m" << std::hex << line << " : " // Line number
+    << "\033[37m" << std::setw(5) << memory[line].data << " " // Value
+    << "\033[90m" << memory[line].comment 
+    << "\033[0m"  << std::endl;
+}
+
 void Scompulator::dumpMemory(){
-    std::cout << "AC: " << AC << std::endl;
+    std::cout << "AC: " << (signed short)AC << std::endl;
     std::cout << "PC: " << PC << std::endl;
 
     for(unsigned int i = 0; i <= lastAddress; i++){
-        std::cout
-        << "\033[93m" << std::hex << i << " : " // Line number
-        << "\033[37m" << std::setw(5) << memory[i].data << " " // Value
-        << "\033[90m" << memory[i].comment 
-        << "\033[0m"  << std::endl;
+        dumpLine(i);
     }
     if(lastAddress < memSize){
         std::cout << std::dec;
         std::cout << "Omitted " << memSize - lastAddress << " memory locations with value 0" << std::endl;
     }
+}
+
+unsigned short Scompulator::getPC(){
+    return PC;
+}
+
+unsigned int Scompulator::getMemSize(){
+    return memSize;
 }
