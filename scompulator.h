@@ -6,8 +6,10 @@
 #include <iomanip>
 #include <assert.h>
 #include <cstring>
+#include <array>
 
 #include "names.h"
+#include "io.h"
 
 enum class Opcode { 
     NOP = 0x00,
@@ -90,10 +92,10 @@ struct MemLocation { // Struct for represnenting the contents of a single addres
     MemType dataType = MemType::UNKNOWN; 
 };
 
-struct IoDevice {
-    unsigned char address;
-    std::string name = "";
-};
+// struct IoDevice {
+//     unsigned char address;
+//     std::string name = "";
+// };
 
 // struct IoDevice IoDevices[] = {
 //     {0x00, "SWITCHES"},
@@ -112,6 +114,8 @@ class Scompulator{
         unsigned short PC = 0;
         unsigned int PC_Stack [10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         unsigned char PC_StackPtr = 0; // Points to the next open index in the PC stack
+        void processOut(unsigned char address);
+        void processIn(unsigned char address);
     public:
         Scompulator(std::ifstream &infile);
         ~Scompulator();
@@ -124,6 +128,10 @@ class Scompulator{
 
         unsigned short getPC();
         unsigned int getMemSize();
+        std::array<IODevice, 2> ioPorts = {
+            IODevice("SWITCHES", 0x00),
+            IODevice("LEDS",     0x01)
+        };
 };
 
 #endif // !_SCOMPULATOR_

@@ -172,10 +172,10 @@ bool Scompulator::execute(){
         }
         break;
     case Opcode::IN:
-
+        processIn(operand);
         break;
     case Opcode::OUT:
-
+        processOut(operand);
         break;
     default:
         if(opcode != Opcode::NOP){
@@ -187,6 +187,34 @@ bool Scompulator::execute(){
     PC++;
 
     return halted;
+}
+
+void Scompulator::processIn(unsigned char address){
+    bool validPort = false;
+    for(unsigned int i = 0; i < ioPorts.size(); i++){
+        if(ioPorts[i].address == address){
+            AC = ioPorts[i].in();
+            validPort = true;
+            break;
+        }
+    }
+    if(validPort == false){
+        std::cout << "Warning: read from invalid IO port " << address;
+    }
+}
+
+void Scompulator::processOut(unsigned char address){
+    bool validPort = false;
+    for(unsigned int i = 0; i < ioPorts.size(); i++){
+        if(ioPorts[i].address == address){
+            ioPorts[i].out(AC);
+            validPort = true;
+            break;
+        }
+    }
+    if(validPort == false){
+        std::cout << "Warning: write to invalid IO port " << address;
+    }
 }
 
 void Scompulator::dumpLine(unsigned int line){

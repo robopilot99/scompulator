@@ -3,8 +3,8 @@ CXXFLAGS=-g -Wall
 
 .PHONY: all
 
-all : scompulator.o main.o
-	$(CC) $(CXXFLAGS) -o Scompulator scompulator.o main.o
+all : scompulator.o main.o io.o
+	$(CC) $(CXXFLAGS) -o Scompulator scompulator.o main.o io.o
 
 clean : 
 	rm *.o
@@ -15,3 +15,6 @@ scompulator.o : scompulator.cpp scompulator.h names.h
 
 main.o : main.cpp scompulator.h
 	$(CC) $(CXXFLAGS) -c main.cpp scompulator.h
+
+io.o : io.cpp io.h
+	$(CC) $(CXXFLAGS) -c io.cpp

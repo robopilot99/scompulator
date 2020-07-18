@@ -21,22 +21,21 @@ std::vector<std::string> split(const std::string &text, char sep) {
     return tokens;
 }
 
+std::string toLower(std::string in){
+    std::transform(in.begin(), in.end(), in.begin(), [](unsigned char c){ return std::tolower(c); }); // To lowercase
+    return in;
+}
+
 int main(){
     std::ifstream infile;
-    infile.open("./Test Programs/call-return.mif");
+    infile.open("./Test Programs/IO.mif");
     Scompulator scomp(infile);
-    // scomp.dumpMemory();
-    // for(int i = 0; i < 50; i++){
-    //     if(scomp.execute()){
-    //         std::cout << "Halted" << std::endl;
-    //         break;
-    //     }
-    // }
     std::vector<std::string> inputs;
     std::string input;
     std::string command;
     std::string arg1;
     std::string arg2;
+
     while(true){
         input = "";
         command = "";
@@ -45,11 +44,8 @@ int main(){
         scomp.dumpLine(scomp.getPC());
         std::cout << ">";
         getline(std::cin, input);
-        std::transform(input.begin(), input.end(), input.begin(), [](unsigned char c){ return std::tolower(c); }); // To lowercase
+        input = toLower(input);
         inputs = split(input, 0x20);
-        // for(int i = 0; i < inputs.size(); i++){
-        //     std::cout << inputs[i];
-        // }
         command = inputs[0];
         if(command == "s" || command == "step" || command == ""){ // Step
             scomp.execute();
@@ -69,6 +65,17 @@ int main(){
                 scomp.dumpLine(i);
             }
             std::cout << "---------------------" << std::endl;
+        } else if (command == "io"){
+            if(inputs.size() < 3){
+                std::cout << "Usage: config [device] [value]" << std::endl;
+            } else {
+                for(unsigned int i = 0; i < scomp.ioPorts.size(); i++){
+                    if(inputs[1] == toLower(scomp.ioPorts[i].name)){
+                        scomp.ioPorts[i].config(inputs[2]);
+                        break;
+                    }
+                }
+            }
         } else if (command == "exit"){
             break;
         } else if (command == "help"){
