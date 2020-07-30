@@ -26,6 +26,16 @@ std::string toLower(std::string in){
     return in;
 }
 
+// Returns a parsed int or -1 if value could not be parsed
+unsigned int parseInt(std::string in){
+   char * p;
+   unsigned int value = strtol(in.c_str(), &p, 0);
+   if(in.c_str() == p){
+       return -1;
+   } 
+   return value;
+}
+
 int main(){
     std::ifstream infile;
     infile.open("./Test Programs/IO.mif");
@@ -39,13 +49,14 @@ int main(){
     while(true){
         input = "";
         command = "";
-        arg1 = "";
-        arg2 = "";
         scomp.dumpLine(scomp.getPC());
         std::cout << ">";
         getline(std::cin, input);
         input = toLower(input);
         inputs = split(input, 0x20);
+        while(inputs.size() < 3){
+            inputs.push_back(std::string(""));
+        }
         command = inputs[0];
         if(command == "s" || command == "step" || command == ""){ // Step
             scomp.execute();
@@ -66,14 +77,35 @@ int main(){
             }
             std::cout << "---------------------" << std::endl;
         } else if (command == "io"){
-            if(inputs.size() < 3){
-                std::cout << "Usage: config [device] [value]" << std::endl;
+            if(inputs[1] == ""){
+                std::cout << "Usage: io device [value]" << std::endl;
             } else {
-                for(unsigned int i = 0; i < scomp.ioPorts.size(); i++){
-                    if(inputs[1] == toLower(scomp.ioPorts[i].name)){
-                        scomp.ioPorts[i].config(inputs[2]);
-                        break;
+                int deviceIndex = -1;
+                int inputAddress = parseInt(inputs[1]);
+                if(inputAddress == -1){
+                    // Value was not parsable as an int, check for a match by name
+                    std::string thisName = inputs[1];
+                    for(unsigned int i = 0; i < scomp.ioPorts.size(); i++){
+                        std::string otherName = scomp.ioPorts[i]->name;
+                        if(inputs[1] == toLower(otherName)){
+                            deviceIndex = i;
+                            break;
+                        }
                     }
+                } else {
+                    // Value was parsable as an int, check for a match by address
+                    for(unsigned int i = 0; i < scomp.ioPorts.size(); i++){
+                        if(inputAddress == scomp.ioPorts[i]->address){
+                            deviceIndex = i;
+                            break;
+                        }
+                    }
+                }
+                if(deviceIndex == -1){
+                    std::cout << "Invalid device '" << inputs[1] << "'" << std::endl;
+                } else {
+                    // We have index of a real IO device, call config function
+                    scomp.ioPorts[deviceIndex]->config(inputs[2]);
                 }
             }
         } else if (command == "exit"){

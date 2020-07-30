@@ -15,11 +15,18 @@ short IODevice::in(){
 }
 
 unsigned int IODevice::config(std::string configuration){
-    try {
-        stored = std::stoi(configuration);
-        std::cout << name << " value set" << std::endl;
-    } catch (const std::invalid_argument &){
-        std::cout << "Invalid argument '" << configuration << "'" << std::endl;
+    // If no configuration is supplied, just print out the current configuration
+    if(configuration == ""){
+        std::cout << name << " has value: " << stored << std::endl;
+        return 0;
     }
+    char * p;
+    unsigned int value = strtol(configuration.c_str(), &p, 0);
+    if(configuration.c_str() == p){
+        std::cout << "Invalid argument '" << configuration << "'" << std::endl;
+        return 0;
+    } 
+    stored = value;
+    std::cout << name << " value set" << std::endl;
     return 1;
 }

@@ -77,6 +77,9 @@ Scompulator::Scompulator(std::ifstream &infile){
 
 Scompulator::~Scompulator(){
     delete[] memory;
+    for(unsigned int i = 0; i < ioPorts.size(); i++){
+        delete ioPorts[i];
+    }
 }
 
 void Scompulator::run(){
@@ -192,8 +195,8 @@ bool Scompulator::execute(){
 void Scompulator::processIn(unsigned char address){
     bool validPort = false;
     for(unsigned int i = 0; i < ioPorts.size(); i++){
-        if(ioPorts[i].address == address){
-            AC = ioPorts[i].in();
+        if(ioPorts[i]->address == address){
+            AC = ioPorts[i]->in();
             validPort = true;
             break;
         }
@@ -206,8 +209,8 @@ void Scompulator::processIn(unsigned char address){
 void Scompulator::processOut(unsigned char address){
     bool validPort = false;
     for(unsigned int i = 0; i < ioPorts.size(); i++){
-        if(ioPorts[i].address == address){
-            ioPorts[i].out(AC);
+        if(ioPorts[i]->address == address){
+            ioPorts[i]->out(AC);
             validPort = true;
             break;
         }

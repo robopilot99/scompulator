@@ -1,0 +1,17 @@
+-- Altera Memory Initialization File (MIF)
+
+DEPTH = 1024;
+WIDTH = 16;
+
+ADDRESS_RADIX = HEX;
+DATA_RADIX = HEX;
+
+CONTENT
+  BEGIN
+    [000..3FF] : 0000;  -- Default to NOP
+
+           000 : 342A;  -- 		ADDI 42
+           001 : 4C01;  -- 		OUT LEDS
+           002 : 4800;  -- 		IN SWITCHES
+           003 : 1403;  -- End:	JUMP END
+  END;

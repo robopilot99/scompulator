@@ -1,0 +1,21 @@
+-- Altera Memory Initialization File (MIF)
+
+DEPTH = 1024;
+WIDTH = 16;
+
+ADDRESS_RADIX = HEX;
+DATA_RADIX = HEX;
+
+CONTENT
+  BEGIN
+    [000..3FF] : 0000;  -- Default to NOP
+
+           000 : 0407;  -- 		LOAD A
+           001 : 4003;  -- 		CALL Math
+           002 : 1402;  -- 		End:	JUMP End
+           003 : 3401;  -- Math:	ADDI 1
+           004 : 2006;  -- 		JZERO Skip
+           005 : 4003;  -- 		CALL MATH
+           006 : 4400;  -- Skip:	RETURN
+           007 : FFFD;  -- A: DW -3
+  END;
