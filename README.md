@@ -7,6 +7,8 @@ Scompulator is currently in alpha. There are probably very many bugs and edge ca
 
 Installation
 ============
+Releases are available [here](https://github.com/robopilot99/scompulator/releases)
+
 The only release at the moment is a Linux binary. Windows users should have no problem using [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10) to run scompulator. Native support for Windows, and possibly other platforms, is only limited by the need for someone to take the initiative to become a maintainer.
 
 Usage
