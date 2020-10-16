@@ -47,9 +47,17 @@ void readInput(std::atomic<bool>& stop){
     stop.store(true);
 }
 
-int main(){
+int main(int argc, const char* argv[]){
+    if(argc < 2){
+        std::cout << "Usage: scompulator [mif file]" << std::endl;
+        return 1;
+    }
     std::ifstream infile;
-    infile.open("./Test Programs/bitCatch.mif");
+    infile.open(argv[1]);
+    if(!infile.is_open()){
+        std::cout << "Unable to open " << argv[1] << std::endl;
+        return 2;
+    }
     Scompulator scomp(infile);
     std::vector<std::string> inputs;
     std::string input;
@@ -167,23 +175,18 @@ int main(){
 
         } else if (command == "help"){
             std::cout <<
-            "context" << std::endl <<
-            "Display several lines of context before and after the PC. Aliased by 'c" << std::endl <<
-            "dump" << std::endl <<
-            "Displays the entire contents of SCOMP memory. Aliased by 'd'" << std::endl <<
-            "exit" << std::endl <<
-            "Terminates SCOMPULATOR" << std::endl <<
-            "step" << std::endl <<
-            "Simulate a single cycle of SCOMP operation. Aliased by 's'. Default action when nothing is entered in the command-prompt" << std::endl <<
-            "go" << std::endl <<
-            "Run continuously until the user presses enter or a breakpoint is encountered" << std::endl <<
-            "break" << std::endl <<
-            "Add or remove a breakpoint at the specified address" << std::endl <<
-            "help" << std::endl <<
-            "Displays a list of all SCOMPULATOR commands. How you got here" << std::endl;
+            "context    Display several lines of context before and after the PC. Aliased by 'c'" << std::endl <<
+            "dump       Displays the entire contents of SCOMP memory. Aliased by 'd'" << std::endl <<
+            "step       Executes the next instruction. Aliased by 's' or newline" << std::endl <<
+            "go         Run continuously until a breakpoint is encountered. Aliased by 'g'" << std::endl <<
+            "break      Toggles a breakpoint at the specified address" << std::endl <<
+            "io         Interact with IO devices. Do IO [device name/address] [value] to set a value " << std::endl <<
+            "help       Displays a list of all SCOMPULATOR commands. How you got here" << std::endl <<
+            "exit       Terminates SCOMPULATOR" << std::endl;
 
         } else {
             std::cout << command << " is not a valid command. try 'help'" << std::endl;
         }
     }
+    infile.close();
 }

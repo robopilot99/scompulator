@@ -1,0 +1,19 @@
+-- Altera Memory Initialization File (MIF)
+
+DEPTH = 2048;
+WIDTH = 16;
+
+ADDRESS_RADIX = HEX;
+DATA_RADIX = HEX;
+
+CONTENT
+  BEGIN
+    000 : b82a; -- LOADI 42;
+    001 : 5001; -- OR 1;
+    002 : 8800; -- RETURN;
+    003 : 98aa; -- OUT &HAA;
+    004 : 2800; -- JUMP LOOP;
+
+    [005..7ff] : 0000; -- Empty memory
+
+  END;

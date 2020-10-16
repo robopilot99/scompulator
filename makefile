@@ -1,9 +1,9 @@
 CC=g++
 CXXFLAGS=-g -Wall
 
-.PHONY: all
+.PHONY: Scompulator
 
-all : io.o periphrials.o scompulator.o main.o
+Scompulator : io.o IODevices/periphrials.o scompulator.o main.o
 	$(CC) $(CXXFLAGS) -pthread -o Scompulator scompulator.o main.o io.o IODevices/periphrials.o
 
 clean : 
@@ -20,5 +20,5 @@ main.o : main.cpp $(wildcard *.h)
 io.o : io.cpp $(wildcard *.h)
 	$(CC) $(CXXFLAGS) -c io.cpp
 
-periphrials.o : $(wildcard IODevices/*.cpp) $(wildcard IODevices/*.h)
+IODevices/periphrials.o : $(wildcard IODevices/*.cpp) $(wildcard IODevices/*.h)
 	$(CC) $(CXXFLAGS) -o IODevices/periphrials.o -c IODevices/*.cpp

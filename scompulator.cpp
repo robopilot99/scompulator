@@ -144,10 +144,27 @@ bool Scompulator::execute(){
     u_int16_t operand = instruction & operandBitmask;
     bool halted = false;
 
+    // Perform checks to verify correct seperation of data/instructions
     if(memory[PC].dataType == MemType::UNKNOWN){
         memory[PC].dataType = MemType::INSTRUCTION;
     } else if(memory[PC].dataType == MemType::DATA) {
         std::cout << "Warning: using " << std::hex << PC << " as instruction" << std::endl;
+    }
+
+    if(
+        opcode == Opcode::LOAD ||
+        opcode == Opcode::STORE ||
+        opcode == Opcode::ADD ||
+        opcode == Opcode::SUB ||
+        opcode == Opcode::AND ||
+        opcode == Opcode::OR ||
+        opcode == Opcode::XOR
+    ) {
+        if(operand < memSize && memory[operand].dataType == MemType::UNKNOWN){
+            memory[operand].dataType = MemType::DATA;
+        } else if(operand < memSize && memory[operand].dataType == MemType::INSTRUCTION){
+            std::cout << "Warning: using " << std::hex << PC << " as data" << std::endl;
+        }
     }
 
     switch (opcode)
@@ -245,7 +262,7 @@ bool Scompulator::execute(){
         break;
     default:
         if(opcode != Opcode::NOP){
-            std::cout << "Unrecognized opcode " << std::hex << (int)opcode << std::endl;
+            std::cout << "Warning: unrecognized opcode " << std::hex << (int)opcode << std::endl;
         }
         break;
     }
