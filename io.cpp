@@ -11,7 +11,7 @@ void IODevice::out(short value){
 
 short IODevice::in(){
     std::cout << name << " reads " << stored << std::endl;
-    return 0;
+    return stored;
 }
 
 unsigned int IODevice::config(std::string configuration){

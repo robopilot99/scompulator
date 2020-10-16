@@ -16,7 +16,7 @@ void LEDs::out(short value){
         }
         std::cout << "*";
     }
-    std::cout << std::endl;
+    std::cout << "\033[0m" << std::endl;
 }
 
 short LEDs::in(){
@@ -34,7 +34,7 @@ unsigned int LEDs::config(std::string configuration){
             }
             std::cout << "*";
         }
-        std::cout << std::endl;
+        std::cout << "\033[0m" << std::endl;
         return 0;
     }
     std::cout << "LEDs cannot be configured" << std::endl;

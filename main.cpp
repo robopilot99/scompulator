@@ -3,6 +3,10 @@
 #include <cctype>
 #include <string>
 #include <vector>
+#include <thread>
+#include <atomic>
+#include <chrono>
+
 #include "scompulator.h"
 
 // Splits a string be deliminator
@@ -36,9 +40,16 @@ unsigned int parseInt(std::string in){
    return value;
 }
 
+// Function used by the "go" command to read input asynchronously
+void readInput(std::atomic<bool>& stop){
+    std::string x;
+    getline(std::cin, x);
+    stop.store(true);
+}
+
 int main(){
     std::ifstream infile;
-    infile.open("./Test Programs/IO.mif");
+    infile.open("./Test Programs/bitCatch.mif");
     Scompulator scomp(infile);
     std::vector<std::string> inputs;
     std::string input;
@@ -49,8 +60,11 @@ int main(){
     while(true){
         input = "";
         command = "";
+
+        std::cout << "\033[93m" << std::hex << std::setw(4) << scomp.getAC() << " | ";
         scomp.dumpLine(scomp.getPC());
         std::cout << ">";
+
         getline(std::cin, input);
         input = toLower(input);
         inputs = split(input, 0x20);
@@ -60,8 +74,10 @@ int main(){
         command = inputs[0];
         if(command == "s" || command == "step" || command == ""){ // Step
             scomp.execute();
+
         } else if (command == "d" || command == "dump"){ // Dump
             scomp.dumpMemory();
+
         } else if (command == "c" || command == "context"){ // Context
             std::cout << "---------------------" << std::endl;
             unsigned int start = scomp.getPC();
@@ -76,6 +92,34 @@ int main(){
                 scomp.dumpLine(i);
             }
             std::cout << "---------------------" << std::endl;
+
+        } else if (command == "g" || command == "go"){
+            std::atomic_bool stop = ATOMIC_VAR_INIT(false);
+            std::cout << "Press enter to terminate execution: " << std::endl;
+
+            // Create a new thread to wait for a user-triggered abort
+            std::thread cinThread(readInput, std::ref(stop));
+            
+            // Step one instruction unconditionally to prevent being caught repeatedly by the same breakpoint
+            scomp.execute();
+
+            while (!stop)
+            {   
+                if(scomp.shouldBreak()){
+                    std::cout << "Breakpoint at line " << scomp.getPC() << ", press enter to continue...";
+                    break;
+                }
+                if(scomp.execute()){
+                    std::cout << "Scompulator has halted. Press Enter to continue...";
+                    break;
+                }
+            }
+            
+            // Proceed to fully flush the output before this thread blocks
+            std::cout.flush();
+            stop = true;
+            cinThread.join();
+
         } else if (command == "io"){
             if(inputs[1] == ""){
                 std::cout << "Usage: io device [value]" << std::endl;
@@ -108,8 +152,19 @@ int main(){
                     scomp.ioPorts[deviceIndex]->config(inputs[2]);
                 }
             }
+
+        } else if (command == "break"){
+            int inputAddress = parseInt(inputs[1]);
+            if(inputAddress == -1){
+                std::cout << "Invalid breakpoint location" << std::endl;
+            } else if (inputAddress > (int)scomp.getMemSize()){
+                std::cout << "Breakpoint is outside memory bounds" << std::endl;
+            } else {
+                scomp.toggleBreak(inputAddress);
+            }
         } else if (command == "exit"){
             break;
+
         } else if (command == "help"){
             std::cout <<
             "context" << std::endl <<
@@ -119,7 +174,11 @@ int main(){
             "exit" << std::endl <<
             "Terminates SCOMPULATOR" << std::endl <<
             "step" << std::endl <<
-            "Simulate a single cycle of scomp operatoin. Aliased by 's'. Default action when nothing is entered in the command-prompt" << std::endl <<
+            "Simulate a single cycle of SCOMP operation. Aliased by 's'. Default action when nothing is entered in the command-prompt" << std::endl <<
+            "go" << std::endl <<
+            "Run continuously until the user presses enter or a breakpoint is encountered" << std::endl <<
+            "break" << std::endl <<
+            "Add or remove a breakpoint at the specified address" << std::endl <<
             "help" << std::endl <<
             "Displays a list of all SCOMPULATOR commands. How you got here" << std::endl;
 

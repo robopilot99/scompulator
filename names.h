@@ -23,5 +23,6 @@ const std::string opcodeNames[] = {
     "OUT"
 };
 
-const short opcodeBitmask  = 0xFC00;
-const short operandBitmask = 0x03Ff;
+const uint16_t opcodeBitmask    = 0xF800;
+const uint16_t operandBitmask   = 0x03FF;
+const uint16_t shiftAmntBitmask = 0x000F;

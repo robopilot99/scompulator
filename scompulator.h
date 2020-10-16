@@ -34,6 +34,7 @@ enum class Opcode {
     RETURN = 0x11,
     IN = 0x12,
     OUT = 0x13,
+    LOADI = 0x17
 };
 
 enum class IoAddresses {
@@ -87,22 +88,13 @@ enum class MemType {
 };
 
 struct MemLocation { // Struct for represnenting the contents of a single address in memory
-    unsigned short data = 0; // 16 bit wide memory width
+    uint16_t data = 0; // 16 bit wide memory width
     std::string comment = ""; // Comment read in from MIF file
     // Store whether a particular memory address is in use as
     // data or an instruction in order to detect common errors
     MemType dataType = MemType::UNKNOWN; 
+    bool breakpoint; // If this memory location should trigger a breakpoint when used as an instruction or an operand
 };
-
-// struct IoDevice {
-//     unsigned char address;
-//     std::string name = "";
-// };
-
-// struct IoDevice IoDevices[] = {
-//     {0x00, "SWITCHES"},
-//     {0x01, "LEDS"}
-// };
 
 class Scompulator{
     private:
@@ -112,23 +104,37 @@ class Scompulator{
         unsigned int lastAddress = 0; // Last address that has an actual value in it
 
         // The one and only accumulator register, 16 bits exactly for compatibility with SCOMP
-        u_int16_t AC = 0;
+        int16_t AC = 0;
         unsigned short PC = 0;
         unsigned int PC_Stack [10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         unsigned char PC_StackPtr = 0; // Points to the next open index in the PC stack
         void processOut(unsigned char address);
         void processIn(unsigned char address);
+
+        bool halted = false;
     public:
         Scompulator(std::ifstream &infile);
         ~Scompulator();
-        void run();
+        // Checks if the instruction at PC (or the next instruction to be executed if PC is not supplied)
+        // triggers a breakpoint
+        // 0 = no break
+        // 1 = break on instruction
+        // 2 = break on operand
+        char shouldBreak(unsigned short xPC);
+        char shouldBreak();
+
+        // Attempts to place a breakpoint at a specific memory location
+        bool toggleBreak(uint16_t location);
+
         // Perform the next instruction
         // Returns true if the execution has halted for whatever reason (jump jumping to itself)
         bool execute(); 
         void dumpLine(unsigned int line);
         void dumpMemory();
+        bool hasHalted();
 
         unsigned short getPC();
+        uint16_t getAC();
         unsigned int getMemSize();
         std::array<IODevice*, 41> ioPorts = {
             new IODevice("SWITCHES", 0x00), // slide switches
